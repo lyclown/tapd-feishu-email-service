@@ -1,0 +1,32 @@
+service: email-service
+
+provider:
+  name: aliyun
+  runtime: nodejs18
+  region: cn-hangzhou
+
+functions:
+  app:
+    handler: dist/main.handler
+    events:
+      - http:
+          path: /{proxy+}
+          method: ANY
+    environment:
+      NODE_ENV: production
+      TAPD_API_KEY: ${env:TAPD_API_KEY}
+      TAPD_WORKSPACE_ID: ${env:TAPD_WORKSPACE_ID}
+      FEISHU_APP_ID: ${env:FEISHU_APP_ID}
+      FEISHU_APP_SECRET: ${env:FEISHU_APP_SECRET}
+      FEISHU_BASE_TOKEN: ${env:FEISHU_BASE_TOKEN}
+      FEISHU_TABLE_ID: ${env:FEISHU_TABLE_ID}
+      WEBHOOK_SECRET: ${env:WEBHOOK_SECRET}
+      SMTP_HOST: ${env:SMTP_HOST}
+      SMTP_PORT: ${env:SMTP_PORT}
+      SMTP_SECURE: ${env:SMTP_SECURE}
+      SMTP_USER: ${env:SMTP_USER}
+      SMTP_PASS: ${env:SMTP_PASS}
+      SMTP_FROM_EMAIL: ${env:SMTP_FROM_EMAIL}
+
+plugins:
+  - serverless-aliyun-function-compute
