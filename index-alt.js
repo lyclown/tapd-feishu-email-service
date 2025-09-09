@@ -1,33 +1,22 @@
 const { NestFactory } = require('@nestjs/core');
 const { ValidationPipe } = require('@nestjs/common');
-const fs = require('fs');
+const path = require('path');
 
 let app;
 
 async function createApp() {
   if (!app) {
     try {
-      // 调试信息：检查文件系统
-      console.log('Current working directory:', process.cwd());
-      console.log('Files in current directory:', fs.readdirSync('.'));
-
-      if (fs.existsSync('./dist')) {
-        console.log('Files in dist directory:', fs.readdirSync('./dist'));
-        if (fs.existsSync('./dist/src')) {
-          console.log('Files in dist/src directory:', fs.readdirSync('./dist/src'));
-        }
-      }
-
-      // 动态导入编译后的模块
-      const modulePath = './dist/app.module';
+      // 使用绝对路径
+      const modulePath = path.join(__dirname, 'dist', 'src', 'app.module');
       console.log('Attempting to require:', modulePath);
+      
       const { AppModule } = require(modulePath);
-
+      
       app = await NestFactory.create(AppModule, {
         logger: ['error', 'warn', 'log'],
       });
-
-      // 全局验证管道
+      
       app.useGlobalPipes(
         new ValidationPipe({
           whitelist: true,
@@ -39,7 +28,6 @@ async function createApp() {
         }),
       );
 
-      // CORS 配置
       app.enableCors({
         origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
         credentials: true,
