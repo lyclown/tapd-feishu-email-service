@@ -113,15 +113,34 @@ async function createApp() {
 
 module.exports = async (req, res) => {
   try {
+    console.log(`Incoming request: ${req.method} ${req.url}`);
+
     const nestApp = await createApp();
     const expressApp = nestApp.getHttpAdapter().getInstance();
+
+    // 确保应用完全初始化
+    if (!nestApp.isInitialized) {
+      console.log('Initializing NestJS app...');
+      await nestApp.init();
+    }
+
+    // 调试：打印请求信息
+    console.log('Request headers:', req.headers);
+    console.log('Request body:', req.body);
+
+    // 直接调用 Express 应用处理请求
     return expressApp(req, res);
   } catch (error) {
     console.error('Serverless function error:', error);
-    res.status(500).json({
-      error: 'Internal Server Error',
-      message: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-    });
+    console.error('Error stack:', error.stack);
+
+    // 确保响应被正确发送
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: 'Internal Server Error',
+        message: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+    }
   }
 };

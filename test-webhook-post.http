@@ -1,0 +1,7 @@
+### 测试本地 Vercel 模拟环境的 POST 请求
+POST http://localhost:3002/webhook/tapd
+Content-Type: application/json
+
+{
+  "test": "hello"
+}
