@@ -1,6 +1,7 @@
 const { NestFactory } = require('@nestjs/core');
 const { ValidationPipe } = require('@nestjs/common');
 const fs = require('fs');
+const path = require('path');
 
 let app;
 
@@ -11,17 +12,44 @@ async function createApp() {
       console.log('Current working directory:', process.cwd());
       console.log('Files in current directory:', fs.readdirSync('.'));
 
-      if (fs.existsSync('./dist')) {
-        console.log('Files in dist directory:', fs.readdirSync('./dist'));
-        if (fs.existsSync('./dist/src')) {
-          console.log('Files in dist/src directory:', fs.readdirSync('./dist/src'));
+      // 检查可能的模块路径
+      const possiblePaths = [
+        './dist/app.module.js',
+        './dist/app.module.js',
+        './dist/app.module',
+        './dist/app.module'
+      ];
+
+      let AppModule;
+      let foundPath = null;
+
+      for (const modulePath of possiblePaths) {
+        try {
+          if (fs.existsSync(modulePath)) {
+            console.log('Found module at:', modulePath);
+            const moduleExports = require(modulePath);
+            AppModule = moduleExports.AppModule;
+            foundPath = modulePath;
+            break;
+          }
+        } catch (error) {
+          console.log('Failed to load from:', modulePath, error.message);
         }
       }
 
-      // 动态导入编译后的模块
-      const modulePath = './dist/app.module';
-      console.log('Attempting to require:', modulePath);
-      const { AppModule } = require(modulePath);
+      if (!AppModule) {
+        // 如果找不到编译后的模块，尝试直接使用 TypeScript 源码
+        console.log('Compiled module not found, trying to use ts-node...');
+        require('ts-node/register');
+        const { AppModule: TSAppModule } = require('./src/app.module.ts');
+        AppModule = TSAppModule;
+      }
+
+      if (!AppModule) {
+        throw new Error('Could not load AppModule from any path');
+      }
+
+      console.log('Successfully loaded AppModule from:', foundPath || 'TypeScript source');
 
       app = await NestFactory.create(AppModule, {
         logger: ['error', 'warn', 'log'],
