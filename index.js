@@ -55,6 +55,18 @@ async function createApp() {
         logger: ['error', 'warn', 'log'],
       });
 
+      // 调试：打印所有注册的路由
+      const server = app.getHttpAdapter();
+      console.log('Registered routes:');
+      if (server && server.getInstance && server.getInstance()._router) {
+        const routes = server.getInstance()._router.stack;
+        routes.forEach(route => {
+          if (route.route) {
+            console.log(`${Object.keys(route.route.methods).join(',').toUpperCase()} ${route.route.path}`);
+          }
+        });
+      }
+
       // 全局验证管道
       app.useGlobalPipes(
         new ValidationPipe({
@@ -72,6 +84,22 @@ async function createApp() {
         origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
         credentials: true,
       });
+
+      // 在 Vercel 环境中也启用 Swagger 文档
+      if (!process.env.DISABLE_SWAGGER) {
+        const { SwaggerModule, DocumentBuilder } = require('@nestjs/swagger');
+        const config = new DocumentBuilder()
+          .setTitle('TAPD-飞书自动化系统')
+          .setDescription('自动将TAPD附件信息同步到飞书多维表格的API文档')
+          .setVersion('1.0')
+          .addTag('webhook', 'Webhook相关接口')
+          .addTag('health', '健康检查接口')
+          .build();
+
+        const document = SwaggerModule.createDocument(app, config);
+        SwaggerModule.setup('api', app, document);
+        console.log('Swagger documentation enabled at /api');
+      }
 
       await app.init();
       console.log('NestJS app initialized successfully');

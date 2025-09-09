@@ -1,0 +1,58 @@
+### 测试所有端点
+
+### 1. 测试根路径 - 应用信息
+GET https://tapd-feishu-email-service.vercel.app/
+
+### 2. 测试健康检查
+GET https://tapd-feishu-email-service.vercel.app/health
+
+### 3. 测试 Swagger 文档
+GET https://tapd-feishu-email-service.vercel.app/api
+
+### 4. 测试 Webhook 端点 - 简单 POST
+POST https://tapd-feishu-email-service.vercel.app/webhook/tapd
+Content-Type: application/json
+
+{
+  "test": "simple test"
+}
+
+### 5. 测试 Webhook 端点 - 完整 TAPD 数据
+POST https://tapd-feishu-email-service.vercel.app/webhook/tapd
+Content-Type: application/json
+
+{
+  "auto_task_id": "1164029412001000237",
+  "auto_task_branch_id": "1164029412001001938", 
+  "workspace_id": "64029412",
+  "search": null,
+  "event": {
+    "workspace_id": "64029412",
+    "user": "李耀",
+    "object_type": "story",
+    "id": "1164029412001164244",
+    "timestamp": 1757420574,
+    "timestamp_micro": 1757420574636,
+    "new": {
+      "attachment_id": "1164029412001039442",
+      "attachment_url": "https://file.tapd.cn/64029412/attachments/download/1164029412001039442/story",
+      "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "filename": "前端-测试需求.xlsx",
+      "id": "1164029412001164244",
+      "resource_type": "attachment",
+      "size": 10378,
+      "sub_event": "attachment_add"
+    },
+    "old": {
+      "id": "1164029412001164244"
+    },
+    "object_info": {
+      "id": "1164029412001164244",
+      "name": "测试需求",
+      "workspace_id": "64029412"
+    },
+    "event_key": "story::attachment",
+    "from": "web",
+    "event_id": "test_event_id_123"
+  }
+}
