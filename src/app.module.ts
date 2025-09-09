@@ -37,15 +37,15 @@ import { configValidationSchema } from './config/config.schema';
             log += ` [${context}]`;
           }
           log += `: ${message}`;
-          
+
           if (Object.keys(meta).length > 0) {
             log += ` ${JSON.stringify(meta)}`;
           }
-          
+
           if (stack) {
             log += `\n${stack}`;
           }
-          
+
           return log;
         }),
       ),
@@ -56,17 +56,20 @@ import { configValidationSchema } from './config/config.schema';
             winston.format.simple(),
           ),
         }),
-        new winston.transports.File({
-          filename: process.env.LOG_FILE || 'logs/app.log',
-          maxsize: 5242880, // 5MB
-          maxFiles: 5,
-        }),
-        new winston.transports.File({
-          filename: 'logs/error.log',
-          level: 'error',
-          maxsize: 5242880, // 5MB
-          maxFiles: 5,
-        }),
+        // 只在非Serverless环境中使用文件日志
+        ...(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME ? [] : [
+          new winston.transports.File({
+            filename: process.env.LOG_FILE || 'logs/app.log',
+            maxsize: 5242880, // 5MB
+            maxFiles: 5,
+          }),
+          new winston.transports.File({
+            filename: 'logs/error.log',
+            level: 'error',
+            maxsize: 5242880, // 5MB
+            maxFiles: 5,
+          }),
+        ]),
       ],
     }),
 
